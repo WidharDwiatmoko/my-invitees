@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "Guest": {
+      "title": "Guest",
+      "description": "A guest invited to the wedding.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The full name of the guest."
+        },
+        "side": {
+          "type": "string",
+          "enum": ["groom", "bride"],
+          "description": "Which side the guest belongs to (groom or bride)."
+        },
+        "isAttending": {
+          "type": "boolean",
+          "description": "Whether the guest is attending the wedding."
+        },
+        "guestsCount": {
+          "type": "integer",
+          "description": "The number of guests attending."
+        },
+        "message": {
+          "type": "string",
+          "description": "A message from the guest."
+        },
+        "attendance": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The events the guest is attending (e.g., Akad Nikah, Resepsi, Ngunduh Mantu)."
+        }
+      },
+      "required": ["name"]
+    }
+  },
+  "firestore": {
+    "/guests/{guestId}": {
+      "schema": "Guest",
+      "description": "Collection of invited guests."
+    }
+  }
+}

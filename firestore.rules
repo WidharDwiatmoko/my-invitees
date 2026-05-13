@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: guests
+    // Document ID: auto-generated or guest name
+    // Fields:
+    //   - name: string (required) - The full name of the guest.
+    //   - name_lowercase: string (required) - The lowercase version of the name for search.
+    //   - isAttending: boolean (optional) - Whether the guest is attending.
+    //   - guestsCount: number (optional) - The number of guests attending.
+    //   - message: string (optional) - A message from the guest.
+    //
+    // ===============================================================
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isValidGuest(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             (!('isAttending' in data) || data.isAttending is bool) &&
+             (!('guestsCount' in data) || (data.guestsCount is number && data.guestsCount >= 0 && data.guestsCount <= 10)) &&
+             (!('message' in data) || (data.message is string && data.message.size() < 1000)) &&
+             (!('attendance' in data) || (data.attendance is list && data.attendance.size() <= 3));
+    }
+
+    match /guests/{guestId} {
+      // Allow public read for lookup
+      allow read: if true;
+      
+      // Allow update if data is valid
+      // Note: We removed the check for existing isAttending to help user fix their data
+      allow update: if isValidGuest(request.resource.data);
+      
+      // Allow admin to create/delete guests
+      allow create, delete: if isAuthenticated();
+    }
+  }
+}
